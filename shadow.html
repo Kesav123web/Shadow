@@ -1,0 +1,917 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>SHADOW - Universal Web IDE & Community (Protected)</title>
+  <style>
+    /* Global Reset & Base Styling */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      min-height: 100vh;
+      background: #08030d;
+      color: #ffffff;
+      overflow-x: hidden;
+      width: 100vw;
+    }
+
+    .screen {
+      display: none;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    /* ----------------------------------
+       1. LANDING PAGE STYLING
+    ---------------------------------- */
+    #landing-screen {
+      justify-content: center;
+      align-items: center;
+      background: radial-gradient(circle at center, #1b0a2a 0%, #08030d 70%, #000000 100%);
+      position: relative;
+      padding: 20px;
+    }
+
+    .ambient-glow {
+      position: absolute;
+      width: 80vw;
+      max-width: 450px;
+      height: 80vw;
+      max-height: 450px;
+      background: rgba(147, 51, 234, 0.18);
+      filter: blur(100px);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .hero-container {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 40px 25px;
+      background: rgba(15, 7, 25, 0.75);
+      border: 1px solid rgba(168, 85, 247, 0.25);
+      border-radius: 24px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8),
+                  0 0 40px rgba(147, 51, 234, 0.15);
+      max-width: 480px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .company-title {
+      font-size: clamp(2.5rem, 8vw, 3.8rem);
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #ffffff;
+      text-shadow: 0 0 10px rgba(168, 85, 247, 0.8),
+                   0 0 25px rgba(147, 51, 234, 0.6),
+                   0 0 50px rgba(126, 34, 206, 0.4);
+      margin-bottom: 25px;
+    }
+
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      width: 100%;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 20px;
+      font-size: clamp(0.9rem, 3.5vw, 1rem);
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border: none;
+      width: 100%;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #7e22ce 0%, #a855f7 100%);
+      color: #ffffff;
+      border: 1px solid rgba(216, 180, 254, 0.4);
+      box-shadow: 0 6px 20px rgba(147, 51, 234, 0.4);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(168, 85, 247, 0.6);
+    }
+
+    .btn-folder {
+      background: rgba(147, 51, 234, 0.25);
+      color: #e9d5ff;
+      border: 1px solid rgba(168, 85, 247, 0.5);
+    }
+
+    .btn-folder:hover {
+      background: rgba(147, 51, 234, 0.45);
+      color: #ffffff;
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: rgba(18, 9, 31, 0.8);
+      color: #e9d5ff;
+      border: 1px solid rgba(168, 85, 247, 0.4);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(35, 14, 58, 0.9);
+      color: #ffffff;
+      transform: translateY(-2px);
+    }
+
+    .btn-auth {
+      background: rgba(255, 255, 255, 0.05);
+      color: #cbd5e1;
+      border: 1px solid rgba(168, 85, 247, 0.3);
+    }
+
+    .btn-auth:hover {
+      background: rgba(168, 85, 247, 0.2);
+      color: #ffffff;
+      transform: translateY(-2px);
+    }
+
+    .btn-admin {
+      margin-top: 15px;
+      background: transparent;
+      color: #a855f7;
+      border: 1px dashed rgba(168, 85, 247, 0.4);
+      font-size: 0.82rem;
+      padding: 8px 16px;
+      border-radius: 20px;
+    }
+
+    .btn-admin:hover {
+      background: rgba(168, 85, 247, 0.15);
+      color: #ffffff;
+    }
+
+    .logged-status { font-size: 0.85rem; color: #4ade80; margin-bottom: 12px; }
+
+    /* ----------------------------------
+       2. CODE EDITOR / IDE SCREEN
+    ---------------------------------- */
+    #ide-screen {
+      flex-direction: column;
+      background: #0d0714;
+    }
+
+    .ide-header {
+      min-height: 50px;
+      background: #0a0410;
+      border-bottom: 1px solid rgba(168, 85, 247, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 15px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .brand-mini {
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      color: #a855f7;
+      font-size: 0.95rem;
+    }
+
+    .ide-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+    .ide-btn {
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      background: rgba(168, 85, 247, 0.15);
+      border: 1px solid rgba(168, 85, 247, 0.4);
+      color: #ffffff;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .ide-btn:hover { background: rgba(168, 85, 247, 0.35); }
+
+    .btn-publish {
+      background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+      border: none;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .ide-body { display: flex; flex: 1; overflow: hidden; }
+
+    .sidebar {
+      width: 200px;
+      background: #060209;
+      border-right: 1px solid rgba(168, 85, 247, 0.15);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-title {
+      padding: 12px 16px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #94a3b8;
+      border-bottom: 1px solid rgba(168, 85, 247, 0.1);
+    }
+
+    .file-tree { list-style: none; padding: 10px 0; overflow-y: auto; }
+
+    .file-item {
+      padding: 8px 16px;
+      font-size: 0.88rem;
+      color: #cbd5e1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .file-item:hover, .file-item.active {
+      background: rgba(168, 85, 247, 0.25);
+      color: #ffffff;
+    }
+
+    .editor-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid rgba(168, 85, 247, 0.15);
+      min-width: 0;
+    }
+
+    .active-tab {
+      background: #0d0714;
+      padding: 10px 20px;
+      font-size: 0.85rem;
+      color: #a855f7;
+      border-bottom: 2px solid #a855f7;
+      width: fit-content;
+    }
+
+    .code-input {
+      flex: 1;
+      background: #09040e;
+      color: #f1f5f9;
+      border: none;
+      outline: none;
+      padding: 15px;
+      font-family: monospace;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      resize: none;
+    }
+
+    .preview-container {
+      flex: 1;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .preview-header {
+      background: #11081c;
+      color: #94a3b8;
+      padding: 8px 16px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    iframe { width: 100%; height: 100%; border: none; }
+
+    @media (max-width: 768px) {
+      .ide-body {
+        flex-direction: column;
+        overflow-y: auto;
+      }
+      .sidebar {
+        width: 100%;
+        max-height: 120px;
+        border-right: none;
+        border-bottom: 1px solid rgba(168, 85, 247, 0.2);
+      }
+      .editor-container {
+        height: 50vh;
+        border-right: none;
+        border-bottom: 1px solid rgba(168, 85, 247, 0.2);
+      }
+      .preview-container {
+        height: 50vh;
+      }
+    }
+
+    /* ----------------------------------
+       3. COMMUNITY / SEE OTHERS' PROJECTS
+    ---------------------------------- */
+    #community-screen {
+      flex-direction: column;
+      background: #08030d;
+    }
+
+    .community-header {
+      padding: 15px 20px;
+      border-bottom: 1px solid rgba(168, 85, 247, 0.2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #0a0410;
+    }
+
+    .community-body {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 15px;
+      align-content: start;
+    }
+
+    .project-card {
+      background: rgba(15, 7, 25, 0.8);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .project-title { font-size: 1.1rem; font-weight: bold; color: #fff; }
+    .project-author { font-size: 0.82rem; color: #c084fc; }
+
+    /* Modals */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+      padding: 15px;
+    }
+
+    .modal-overlay.active { display: flex; }
+
+    .modal-box {
+      background: #0f0719;
+      border: 1px solid rgba(168, 85, 247, 0.4);
+      border-radius: 20px;
+      padding: 25px 20px;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-large {
+      max-width: 850px;
+      height: 85vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 15px;
+      text-align: left;
+    }
+
+    .form-group label { font-size: 0.85rem; color: #c084fc; }
+    .form-group input, .form-group textarea {
+      padding: 12px;
+      background: #060209;
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      border-radius: 8px;
+      color: #ffffff;
+      outline: none;
+      font-size: 0.95rem;
+    }
+
+    .msg-box { font-size: 0.82rem; margin-bottom: 12px; text-align: center; }
+    .msg-error { color: #f87171; }
+    .msg-success { color: #4ade80; }
+
+    .user-list {
+      max-height: 150px;
+      overflow-y: auto;
+      background: #060209;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(168, 85, 247, 0.2);
+      text-align: left;
+      font-family: monospace;
+      font-size: 0.85rem;
+      color: #e9d5ff;
+    }
+
+    .chat-box {
+      height: 180px;
+      overflow-y: auto;
+      background: #060209;
+      border: 1px solid rgba(168, 85, 247, 0.2);
+      border-radius: 8px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .chat-msg {
+      background: rgba(168, 85, 247, 0.15);
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="ambient-glow"></div>
+
+  <!-- 1. LANDING PAGE -->
+  <main id="landing-screen" class="screen active">
+    <div class="hero-container">
+      <h1 class="company-title">SHADOW</h1>
+      <div id="user-greeting" class="logged-status" style="display: none;"></div>
+
+      <div class="actions">
+        <button class="btn btn-primary" onclick="openNewProject()">Create a Project</button>
+        <button class="btn btn-folder" onclick="openLocalFolder()">📁 Open Folder (Device)</button>
+        <button class="btn btn-secondary" onclick="openCommunity()">See Others' Projects</button>
+        <button class="btn btn-auth" onclick="openModal('auth-modal')">🔑 Sign In / Sign Up</button>
+      </div>
+
+      <button class="btn btn-admin" onclick="openAdminDashboard()">🔒 App Creator Admin</button>
+      <button class="btn btn-admin" style="border-style: solid; margin-top: 8px;" onclick="viewSystemSourceCode()">🛡️ Creator App Code Lock</button>
+    </div>
+  </main>
+
+  <!-- 2. CODE EDITOR / IDE SCREEN -->
+  <div id="ide-screen" class="screen">
+    <header class="ide-header">
+      <div class="brand-mini">SHADOW // STUDIO</div>
+      <div class="ide-actions">
+        <button class="ide-btn btn-publish" onclick="publishProject()">🚀 Publish</button>
+        <button class="ide-btn" onclick="openLocalFolder()">📁 Folder</button>
+        <button class="ide-btn" onclick="goHome()">🏠 Home</button>
+      </div>
+    </header>
+
+    <div class="ide-body">
+      <aside class="sidebar">
+        <div class="sidebar-title">
+          <span>Explorer</span>
+          <span id="folder-label" style="text-transform: none; color: #a855f7;"></span>
+        </div>
+        <ul class="file-tree" id="file-list"></ul>
+      </aside>
+
+      <section class="editor-container">
+        <div class="active-tab" id="current-filename">index.html</div>
+        <textarea id="code-editor" class="code-input" spellcheck="false"></textarea>
+      </section>
+
+      <section class="preview-container">
+        <div class="preview-header">Live Web Preview</div>
+        <iframe id="live-preview"></iframe>
+      </section>
+    </div>
+  </div>
+
+  <!-- 3. COMMUNITY / SEE OTHERS' PROJECTS -->
+  <div id="community-screen" class="screen">
+    <header class="community-header">
+      <div class="brand-mini">SHADOW // COMMUNITY</div>
+      <button class="ide-btn" onclick="goHome()">🏠 Home</button>
+    </header>
+    <div class="community-body" id="projects-grid"></div>
+  </div>
+
+  <!-- MODALS -->
+  <div id="auth-modal" class="modal-overlay">
+    <div class="modal-box">
+      <h2>Sign In to SHADOW</h2>
+      <div id="auth-msg" class="msg-box"></div>
+      <form onsubmit="handleAuth(event)">
+        <div class="form-group">
+          <label>1. Email Address</label>
+          <input type="email" id="user-email" required placeholder="name@example.com">
+        </div>
+        <div class="form-group">
+          <label>2. Username</label>
+          <input type="text" id="user-name" required placeholder="unique_username">
+        </div>
+        <div class="form-group">
+          <label>3. Password</label>
+          <input type="password" id="user-pass" required placeholder="••••••••">
+        </div>
+        <button type="submit" class="btn btn-primary">Sign In / Register</button>
+        <button type="button" class="btn btn-secondary" style="margin-top: 8px;" onclick="closeModal('auth-modal')">Cancel</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="admin-modal" class="modal-overlay">
+    <div class="modal-box">
+      <h2>App Creator Dashboard</h2>
+      <p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 15px;">
+        Privacy Active: You can only view total user count and usernames. Passwords and project files remain protected.
+      </p>
+      <div style="text-align: left; margin-bottom: 15px;">
+        <strong>Total Registered Users:</strong> <span id="admin-user-count" style="color: #a855f7; font-weight: bold;">0</span>
+      </div>
+      <div class="user-list" id="admin-username-list"></div>
+      <button class="btn btn-secondary" style="margin-top: 15px;" onclick="closeModal('admin-modal')">Close</button>
+    </div>
+  </div>
+
+  <!-- Project View Modal -->
+  <div id="view-project-modal" class="modal-overlay">
+    <div class="modal-box modal-large">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 8px; flex-wrap: wrap;">
+        <h2 id="view-proj-title" style="margin: 0; font-size: 1.1rem;"></h2>
+        <button class="ide-btn btn-primary" id="view-proj-chat-btn">💬 Talk To Creator</button>
+      </div>
+      <iframe id="view-proj-frame" style="flex: 1; border-radius: 8px; background: #fff;"></iframe>
+      <button class="btn btn-secondary" style="margin-top: 12px;" onclick="closeModal('view-project-modal')">Close Preview</button>
+    </div>
+  </div>
+
+  <!-- Direct Chat Modal -->
+  <div id="msg-modal" class="modal-overlay">
+    <div class="modal-box">
+      <h2>Talk to Project Creator</h2>
+      <p id="msg-recipient-label" style="font-size: 0.85rem; color: #c084fc; margin-bottom: 12px;"></p>
+
+      <div class="chat-box" id="chat-messages-container"></div>
+
+      <div class="form-group">
+        <label>Your Message / Question</label>
+        <textarea id="doubt-text" rows="3" placeholder="Type a message or doubt about this project..."></textarea>
+      </div>
+      <button class="btn btn-primary" onclick="sendDoubtMessage()">Send Message</button>
+      <button class="btn btn-secondary" style="margin-top: 8px;" onclick="closeModal('msg-modal')">Close</button>
+    </div>
+  </div>
+
+  <script>
+    let projectFiles = {};
+    let activeFile = "index.html";
+    let activeMessagingCreator = "";
+    let activeProjectId = "";
+
+    const editor = document.getElementById('code-editor');
+    const preview = document.getElementById('live-preview');
+    const fileListEl = document.getElementById('file-list');
+    const currentTabEl = document.getElementById('current-filename');
+
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    function goHome() { showScreen('landing-screen'); }
+
+    function openNewProject() {
+      projectFiles = {
+        "index.html": `<!DOCTYPE html>\n<html>\n<head>\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n  <style>\n    body {\n      background: #0f0719;\n      color: #a855f7;\n      font-family: sans-serif;\n      display: flex;\n      justify-content: center;\n      align-items: center;\n      height: 100vh;\n      margin: 0;\n    }\n  </style>\n</head>\n<body>\n  <h1>Welcome to My SHADOW Project!</h1>\n</body>\n</html>`
+      };
+      activeFile = "index.html";
+      document.getElementById('folder-label').textContent = "(Default)";
+      renderFileList();
+      loadFile(activeFile);
+      showScreen('ide-screen');
+    }
+
+    async function openLocalFolder() {
+      try {
+        if ('showDirectoryPicker' in window) {
+          const directoryHandle = await window.showDirectoryPicker();
+          projectFiles = {};
+          document.getElementById('folder-label').textContent = `[ ${directoryHandle.name} ]`;
+
+          for await (const entry of directoryHandle.values()) {
+            if (entry.kind === 'file' && entry.name.match(/\.(html|css|js|txt|json|md)$/i)) {
+              const file = await entry.getFile();
+              projectFiles[entry.name] = await file.text();
+            }
+          }
+
+          const fileNames = Object.keys(projectFiles);
+          activeFile = fileNames.includes('index.html') ? 'index.html' : (fileNames[0] || 'index.html');
+          if (fileNames.length === 0) projectFiles['index.html'] = '<!-- Empty -->';
+
+          renderFileList();
+          loadFile(activeFile);
+          showScreen('ide-screen');
+        } else {
+          const input = document.createElement('input');
+          input.type = 'file';
+          input.webkitdirectory = true;
+          input.onchange = async (e) => {
+            projectFiles = {};
+            for (let i = 0; i < e.target.files.length; i++) {
+              if (e.target.files[i].name.match(/\.(html|css|js|txt|json|md)$/i)) {
+                projectFiles[e.target.files[i].name] = await e.target.files[i].text();
+              }
+            }
+            activeFile = Object.keys(projectFiles)[0] || 'index.html';
+            renderFileList();
+            loadFile(activeFile);
+            showScreen('ide-screen');
+          };
+          input.click();
+        }
+      } catch (err) {
+        console.log('Cancelled folder picker:', err);
+      }
+    }
+
+    const DB_PROJECTS_KEY = 'shadow_published_projects';
+    const SESSION_USER_KEY = 'shadow_active_user';
+
+    function publishProject() {
+      const activeUser = localStorage.getItem(SESSION_USER_KEY);
+      if (!activeUser) {
+        alert("Please 'Sign In' first before publishing your project under your username!");
+        openModal('auth-modal');
+        return;
+      }
+
+      const projectName = prompt("Enter a title for your project:", "My Project");
+      if (!projectName) return;
+
+      let htmlCode = projectFiles['index.html'] || editor.value || "<h1>Published Project</h1>";
+      const projects = JSON.parse(localStorage.getItem(DB_PROJECTS_KEY) || '[]');
+      
+      projects.push({
+        id: 'proj_' + Date.now(),
+        title: projectName,
+        author: activeUser,
+        code: htmlCode,
+        timestamp: new Date().toLocaleDateString()
+      });
+
+      localStorage.setItem(DB_PROJECTS_KEY, JSON.stringify(projects));
+      alert(`Success! Project "${projectName}" published by @${activeUser}.`);
+    }
+
+    function openCommunity() {
+      const projectsGrid = document.getElementById('projects-grid');
+      const projects = JSON.parse(localStorage.getItem(DB_PROJECTS_KEY) || '[]');
+
+      if (projects.length === 0) {
+        projectsGrid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: #94a3b8; padding: 40px;">No projects published by the community yet. Be the first to publish!</div>`;
+      } else {
+        projectsGrid.innerHTML = projects.map(p => `
+          <div class="project-card">
+            <div class="project-title">${p.title}</div>
+            <div class="project-author">Creator: @${p.author} • ${p.timestamp}</div>
+            <div style="display: flex; gap: 10px; margin-top: auto;">
+              <button class="ide-btn" style="flex:1;" onclick="previewPublishedProject('${p.id}')">👁️ View</button>
+              <button class="ide-btn btn-primary" style="flex:1;" onclick="openDoubtModal('${p.author}', '${p.title}', '${p.id}')">💬 Message</button>
+            </div>
+          </div>
+        `).join('');
+      }
+      showScreen('community-screen');
+    }
+
+    function previewPublishedProject(projId) {
+      const projects = JSON.parse(localStorage.getItem(DB_PROJECTS_KEY) || '[]');
+      const proj = projects.find(p => p.id === projId);
+
+      if (proj && proj.code) {
+        document.getElementById('view-proj-title').textContent = `${proj.title} (@${proj.author})`;
+        const frame = document.getElementById('view-proj-frame');
+        frame.srcdoc = proj.code;
+
+        document.getElementById('view-proj-chat-btn').onclick = () => {
+          closeModal('view-project-modal');
+          openDoubtModal(proj.author, proj.title, proj.id);
+        };
+
+        openModal('view-project-modal');
+      } else {
+        alert("Project preview not available.");
+      }
+    }
+
+    const DB_MESSAGES_KEY = 'shadow_project_chats';
+
+    function openDoubtModal(author, title, projId) {
+      const activeUser = localStorage.getItem(SESSION_USER_KEY);
+      if (!activeUser) {
+        alert("Please Sign In first to talk with creators.");
+        openModal('auth-modal');
+        return;
+      }
+      activeMessagingCreator = author;
+      activeProjectId = projId;
+
+      document.getElementById('msg-recipient-label').textContent = `Chat with @${author} regarding "${title}"`;
+      document.getElementById('doubt-text').value = '';
+      
+      renderChatMessages();
+      openModal('msg-modal');
+    }
+
+    function renderChatMessages() {
+      const chats = JSON.parse(localStorage.getItem(DB_MESSAGES_KEY) || '{}');
+      const chatKey = `${activeProjectId}_${activeMessagingCreator}`;
+      const messageList = chats[chatKey] || [];
+
+      const container = document.getElementById('chat-messages-container');
+      if (messageList.length === 0) {
+        container.innerHTML = `<span style="color: #64748b; font-size: 0.8rem;">No messages yet. Start the conversation!</span>`;
+      } else {
+        container.innerHTML = messageList.map(m => `
+          <div class="chat-msg">
+            <strong style="color:#c084fc;">@${m.sender}:</strong> ${m.text}
+          </div>
+        `).join('');
+      }
+    }
+
+    function sendDoubtMessage() {
+      const text = document.getElementById('doubt-text').value.trim();
+      const activeUser = localStorage.getItem(SESSION_USER_KEY);
+      if (!text) {
+        alert("Please type a message.");
+        return;
+      }
+
+      const chats = JSON.parse(localStorage.getItem(DB_MESSAGES_KEY) || '{}');
+      const chatKey = `${activeProjectId}_${activeMessagingCreator}`;
+      
+      if (!chats[chatKey]) chats[chatKey] = [];
+      
+      chats[chatKey].push({
+        sender: activeUser,
+        text: text,
+        timestamp: Date.now()
+      });
+
+      localStorage.setItem(DB_MESSAGES_KEY, JSON.stringify(chats));
+      document.getElementById('doubt-text').value = '';
+      renderChatMessages();
+    }
+
+    function loadFile(filename) {
+      activeFile = filename;
+      currentTabEl.textContent = filename;
+      editor.value = projectFiles[filename] || "";
+      document.querySelectorAll('.file-item').forEach(el => {
+        el.classList.toggle('active', el.dataset.filename === filename);
+      });
+      updatePreview();
+    }
+
+    function renderFileList() {
+      fileListEl.innerHTML = '';
+      Object.keys(projectFiles).forEach(name => {
+        const li = document.createElement('li');
+        li.className = `file-item ${name === activeFile ? 'active' : ''}`;
+        li.dataset.filename = name;
+        li.innerHTML = `📄 ${name}`;
+        li.onclick = () => loadFile(name);
+        fileListEl.appendChild(li);
+      });
+    }
+
+    function updatePreview() {
+      if (activeFile.endsWith('.html')) {
+        preview.srcdoc = editor.value;
+      }
+    }
+
+    editor.addEventListener('input', () => {
+      projectFiles[activeFile] = editor.value;
+      updatePreview();
+    });
+
+    // CREATOR SOURCE CODE SECURITY LOCK
+    function viewSystemSourceCode() {
+      const pass = prompt("Enter App Creator Security Passkey:");
+      if (pass !== "admin123") {
+        alert("Access Denied: Protected SHADOW App Source Code. Only the app creator can inspect or modify system architecture.");
+        return;
+      }
+      alert("Passkey Verified: Creator system access granted.");
+    }
+
+    const DB_USERS_KEY = 'shadow_app_registered_users';
+
+    function getUsersDB() { return JSON.parse(localStorage.getItem(DB_USERS_KEY) || '[]'); }
+    function saveUsersDB(db) { localStorage.setItem(DB_USERS_KEY, JSON.stringify(db)); }
+
+    function openModal(id) { document.getElementById(id).classList.add('active'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+    function handleAuth(event) {
+      event.preventDefault();
+      const email = document.getElementById('user-email').value.trim().toLowerCase();
+      const username = document.getElementById('user-name').value.trim();
+      const password = document.getElementById('user-pass').value;
+      const msgBox = document.getElementById('auth-msg');
+
+      const users = getUsersDB();
+      const existingEmail = users.find(u => u.email === email);
+      const existingUsername = users.find(u => u.username.toLowerCase() === username.toLowerCase());
+
+      if (existingEmail) {
+        if (existingEmail.username.toLowerCase() !== username.toLowerCase()) {
+          msgBox.className = "msg-box msg-error";
+          msgBox.textContent = `Email locked to username: "${existingEmail.username}".`;
+          return;
+        }
+        if (existingEmail.password !== password) {
+          msgBox.className = "msg-box msg-error";
+          msgBox.textContent = "Incorrect password.";
+          return;
+        }
+        localStorage.setItem(SESSION_USER_KEY, username);
+      } else {
+        if (existingUsername) {
+          msgBox.className = "msg-box msg-error";
+          msgBox.textContent = "Username already taken by another user.";
+          return;
+        }
+        users.push({ email, username, password });
+        saveUsersDB(users);
+        localStorage.setItem(SESSION_USER_KEY, username);
+      }
+
+      msgBox.className = "msg-box msg-success";
+      msgBox.textContent = "Signed in successfully!";
+
+      setTimeout(() => {
+        closeModal('auth-modal');
+        updateUserUI();
+      }, 800);
+    }
+
+    function openAdminDashboard() {
+      const pass = prompt("Enter App Creator Access Passkey:");
+      if (pass !== "admin123") {
+        alert("Access Denied.");
+        return;
+      }
+      const users = getUsersDB();
+      document.getElementById('admin-user-count').textContent = users.length;
+      document.getElementById('admin-username-list').innerHTML = users.length 
+        ? users.map(u => `• ${u.username}`).join('<br>') 
+        : "No users registered yet.";
+      openModal('admin-modal');
+    }
+
+    function updateUserUI() {
+      const activeUser = localStorage.getItem(SESSION_USER_KEY);
+      const greeting = document.getElementById('user-greeting');
+      if (activeUser) {
+        greeting.style.display = 'block';
+        greeting.textContent = `Signed in as: @${activeUser}`;
+      }
+    }
+
+    updateUserUI();
+  </script>
+</body>
+</html>
